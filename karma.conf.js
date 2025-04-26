@@ -2,7 +2,7 @@ const path = require('path');
 
 // configures browsers to run test against
 // any of [ 'ChromeHeadless', 'Chrome', 'Firefox' ]
-const browsers = (process.env.TEST_BROWSERS || 'Debug').split(',');
+const browsers = ['ChromeDebugging'];
 
 // use puppeteer provided Chrome for testing
 process.env.CHROME_BIN = require('puppeteer').executablePath();
@@ -26,6 +26,13 @@ module.exports = function(karma) {
 
     preprocessors: {
       [suite]: [ 'webpack' ]
+    },
+
+    customLaunchers: {
+      'ChromeDebugging': {
+        base: 'Chrome',
+        flags: [ '--remote-debugging-port=9333' ]
+      }
     },
 
     browsers,
