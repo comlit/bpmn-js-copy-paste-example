@@ -34,27 +34,22 @@ const nativeCopyModule = {
       moddle, clipboard
     ) {
 
-    // persist into local storage whenever
-    // copy took place
+    // persist into system clipboard whenever copy took place
     eventBus.on('copyPaste.elementsCopied', event => {
       const { tree } = event;
 
-      console.log('PUT localStorage', tree);
-
-      // persist in system clipboard, encoded as json
+      //console.log('Copying to system clipboard', tree);
       navigator.clipboard.writeText(JSON.stringify(tree))
     });
 
-    // add listener for when the user focuses the tab/page
+
     function handleFocus() {
-      console.log('Tab/page is focused');
-      //read from clipboard
       navigator.clipboard.readText()
         .then(text => {
-          console.log('Clipboard contents:', text);
-          // parse tree, reinstantiating contained objects
+          //lacks check if clipboard contents is a vaild serialized diagram
+
+          //console.log('Clipboard contents:', text);
           const parsedCopy = JSON.parse(text, createReviver(moddle));
-          // put into clipboard
           clipboard.set(parsedCopy);
         })
         .catch(err => {
@@ -64,7 +59,6 @@ const nativeCopyModule = {
 
     window.addEventListener('focus', handleFocus);
 
-    // Ensure the event listener is removed when no longer needed
     eventBus.on('diagram.destroy', () => {
       window.removeEventListener('focus', handleFocus);
     });
