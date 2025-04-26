@@ -41,33 +41,32 @@ const nativeCopyModule = {
 
       console.log('PUT localStorage', tree);
 
-      // persist in local storage, encoded as json
-      localStorage.setItem('bpmnClipboard', JSON.stringify(tree));
+      // persist in system clipboard, encoded as json
+      navigator.clipboard.writeText(JSON.stringify(tree))
     });
 
-    // intercept global paste keybindings and
-    // inject reified pasted stack
-    keyboard.addListener(2000, event => {
-      const { keyEvent } = event;
+    // add listener for when the user focuses the tab/page
+    function handleFocus() {
+      console.log('Tab/page is focused');
+      //read from clipboard
+      navigator.clipboard.readText()
+        .then(text => {
+          console.log('Clipboard contents:', text);
+          // parse tree, reinstantiating contained objects
+          const parsedCopy = JSON.parse(text, createReviver(moddle));
+          // put into clipboard
+          clipboard.set(parsedCopy);
+        })
+        .catch(err => {
+          console.error('Failed to read clipboard contents: ', err);
+        });
+    }
 
-      if (!isPaste(keyEvent)) {
-        return;
-      }
+    window.addEventListener('focus', handleFocus);
 
-      // retrieve from local storage
-      const serializedCopy = localStorage.getItem('bpmnClipboard');
-
-      if (!serializedCopy) {
-        return;
-      }
-
-      // parse tree, reinstantiating contained objects
-      const parsedCopy = JSON.parse(serializedCopy, createReviver(moddle));
-
-      console.log('GET localStorage', parsedCopy);
-
-      // put into clipboard
-      clipboard.set(parsedCopy);
+    // Ensure the event listener is removed when no longer needed
+    eventBus.on('diagram.destroy', () => {
+      window.removeEventListener('focus', handleFocus);
     });
   } ]
 }
